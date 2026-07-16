@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="cart-functions.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23C45D5F'/><text x='50' y='.9em' font-size='80' text-anchor='middle' fill='white' font-weight='bold'>М</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Между строк – Карточка товара</title>
+    <link href="public/css/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #faf5f4;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(196,93,95,0.12);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #C45D5F;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+        .header nav { display: flex; gap: 24px; }
+        .header nav a {
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .header nav a:hover { color: #C45D5F; }
+        .cart-link {
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+        .cart-link:hover { color: #C45D5F; }
+        .cart-count {
+            background: #C45D5F;
+            color: white;
+            border-radius: 50%;
+            padding: 0 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 4px;
+            position: relative;
+            top: -6px;
+        }
+
+        .breadcrumbs {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .breadcrumbs a { color: #C45D5F; text-decoration: none; }
+        .breadcrumbs a:hover { text-decoration: underline; }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+        }
+
+        .gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .main-image {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            background: #f0ecea;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .main-image img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: 0.3s;
+        }
+        .gallery-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .thumbnails {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            flex: 1;
+            padding: 4px 0;
+        }
+        .thumbnails img {
+            width: 80px; height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .thumbnails img:hover { border-color: #C45D5F; }
+        .thumbnails img.active { border-color: #C45D5F; }
+        .gallery-btn {
+            background: #C45D5F;
+            color: white;
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.2s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gallery-btn:hover { background: #a84a4c; }
+
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .product-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c1e1e;
+        }
+        .product-author {
+            font-size: 18px;
+            color: #555;
+        }
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .stars {
+            color: #f5a623;
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+        .product-price {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 8px 0;
+        }
+        .product-price .old {
+            text-decoration: line-through;
+            color: #aaa;
+            font-size: 20px;
+        }
+        .product-price .new {
+            font-size: 32px;
+            font-weight: 700;
+            color: #C45D5F;
+        }
+        .product-price .discount-badge {
+            background: #C45D5F;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .product-description {
+            color: #555;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .product-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: #C45D5F;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary:hover { background: #a84a4c; }
+        .btn-secondary {
+            background: transparent;
+            color: #C45D5F;
+            border: 2px solid #C45D5F;
+            padding: 12px 36px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-secondary:hover { background: #C45D5F; color: white; }
+
+        .product-specs {
+            margin-top: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+        .product-specs h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 24px;
+        }
+        .specs-grid .spec {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #f5f0ee;
+            font-size: 14px;
+        }
+        .specs-grid .spec .label { color: #888; }
+        .specs-grid .spec .value { color: #2c1e1e; font-weight: 500; }
+
+        .reviews-section {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 40px;
+        }
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .reviews-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+        }
+        .reviews-header a { color: #C45D5F; text-decoration: none; }
+        .review-item {
+            border-bottom: 1px solid #f0ecea;
+            padding: 16px 0;
+        }
+        .review-item:last-child { border-bottom: none; }
+        .review-item .reviewer {
+            font-weight: 600;
+            color: #2c1e1e;
+        }
+        .review-item .review-date {
+            color: #999;
+            font-size: 13px;
+            margin-left: 12px;
+        }
+        .review-item .review-text {
+            color: #555;
+            margin-top: 4px;
+            font-size: 14px;
+        }
+
+        .similar-section { margin-bottom: 40px; }
+        .similar-section h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 20px;
+        }
+        .similar-card {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: 0.2s;
+            text-align: center;
+        }
+        .similar-card:hover { box-shadow: 0 8px 24px rgba(196,93,95,0.15); }
+        .similar-card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .similar-card .title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 8px;
+            color: #2c1e1e;
+        }
+        .similar-card .author {
+            color: #888;
+            font-size: 12px;
+        }
+        .similar-card .price {
+            color: #C45D5F;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .site-footer {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 32px 16px;
+            margin-top: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .footer-bonus {
+            background: #faf0ee;
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            border: 1px solid #f0e0dd;
+        }
+        .footer-bonus-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-bonus-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c1e1e;
+        }
+        .footer-bonus-content p {
+            color: #555;
+            font-size: 14px;
+            margin: 4px 0 12px;
+        }
+        .bonus-btn {
+            background: #C45D5F;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .bonus-btn:hover { background: #a84a4c; }
+        .footer-phone { text-align: right; }
+        .footer-phone span {
+            font-size: 24px;
+            font-weight: 700;
+            color: #C45D5F;
+            font-family: 'Playfair Display', serif;
+        }
+        .footer-links-small {
+            display: flex;
+            gap: 16px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .footer-links-small a {
+            color: #C45D5F;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .footer-links-small a:hover { text-decoration: underline; }
+
+        .footer-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        .footer-col h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c1e1e;
+            margin-bottom: 12px;
+        }
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-col ul li { margin-bottom: 8px; }
+        .footer-col ul li a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .footer-col ul li a:hover { color: #C45D5F; }
+        .app-badge {
+            background: #f5f0ee;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            margin: 12px 0;
+        }
+        .social-icons a {
+            color: #C45D5F;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .social-icons a:hover { text-decoration: underline; }
+        .share-link {
+            color: #C45D5F;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .share-link:hover { text-decoration: underline; }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            .gallery-controls { flex-direction: column; align-items: stretch; }
+            .thumbnails { justify-content: center; }
+            .specs-grid { grid-template-columns: 1fr; }
+            .footer-phone { text-align: center; }
+            .footer-links-small { justify-content: center; }
+            .product-title { font-size: 26px; }
+            .product-price .new { font-size: 26px; }
+        }
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                border-radius: 20px;
+                padding: 16px;
+            }
+            .header nav {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .cart-link { text-align: center; }
+            .product-actions { flex-direction: column; }
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #888;
+            transition: 0.2s;
+            padding: 4px 8px;
+        }
+        .modal-close:hover {
+            color: #C45D5F;
+            transform: rotate(90deg);
+        }
+        .modal-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            color: #2c1e1e;
+            margin-bottom: 8px;
+        }
+        .modal-content .sub {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+        .shop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .shop-item {
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 16px 20px;
+            transition: 0.2s;
+        }
+        .shop-item:hover {
+            border-color: #C45D5F;
+            box-shadow: 0 2px 12px rgba(196,93,95,0.08);
+        }
+        .shop-item .name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #2c1e1e;
+        }
+        .shop-item .address {
+            font-size: 14px;
+            color: #555;
+            margin: 4px 0;
+        }
+        .shop-item .hours {
+            font-size: 13px;
+            color: #888;
+        }
+        .shop-item .phone {
+            font-size: 14px;
+            color: #C45D5F;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        .modal-map {
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .modal-map iframe {
+            width: 100%;
+            height: 280px;
+            border: 0;
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                padding: 20px;
+            }
+            .modal-content h2 {
+                font-size: 22px;
+            }
+            .shop-item {
+                padding: 12px 16px;
+            }
+            .modal-map iframe {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- модальное окно -->
+<div class="modal-overlay" id="pickupModal">
+    <div class="modal-content">
+        <button class="modal-close" id="modalClose">&times;</button>
+        <h2>Забрать из магазина</h2>
+        <p class="sub">Выберите удобный магазин, чтобы забрать книгу</p>
+
+        <div class="shop-list">
+            <div class="shop-item">
+                <div class="name">📍 ТЦ «Макси»</div>
+                <div class="address">г. Тула, ул. Ленина, 92</div>
+                <div class="hours">Ежедневно: 10:00 – 22:00</div>
+                <div class="phone">+7 (4872) 25-70-89</div>
+            </div>
+            <div class="shop-item">
+                <div class="name">📍 ТРЦ «Гостиный двор»</div>
+                <div class="address">г. Тула, пр. Ленина, 85</div>
+                <div class="hours">Пн–Пт: 09:00 – 21:00, Сб–Вс: 10:00 – 20:00</div>
+                <div class="phone">+7 (4872) 33-44-55</div>
+            </div>
+            <div class="shop-item">
+                <div class="name">📍 Книжный «Между строк»</div>
+                <div class="address">г. Тула, ул. Советская, 12</div>
+                <div class="hours">Пн–Сб: 10:00 – 20:00, Вс: выходной</div>
+                <div class="phone">+7 (4872) 66-77-88</div>
+            </div>
+        </div>
+
+        <div class="modal-map">
+            <iframe src="https://yandex.ru/map-widget/v1/?um=constructor%3A1234567890abcdef&source=constructor" 
+                    allowfullscreen>
+            </iframe>
+        </div>
+        <p style="text-align: center; font-size: 13px; color: #aaa; margin-top: 12px;">
+            * Карта обновляется автоматически. Приближайте и выбирайте удобный магазин.
+        </p>
+    </div>
+</div>
+
+<div class="container">
+<!-- шапка -->
+    <div class="header">
+        <a href="index.html" class="logo">МЕЖДУ СТРОК</a>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="#">Новинки</a>
+            <a href="contact.html">Контакты</a>
+        </nav>
+        <a href="cart.html" class="cart-link">Корзина <span class="cart-count" id="cartCount">0</span></a>
+    </div>
+
+    <div class="breadcrumbs">
+        <a href="index.html">Главная</a> / 
+        <a href="catalog.html">Каталог</a> / 
+        <a href="#">Современная проза</a> / 
+        <span style="color: #2c1e1e; font-weight: 500;" id="breadcrumb-title">Книга</span>
+    </div>
+<!-- карточка товара -->
+    <div class="product-grid" id="product-grid">
+        <div class="gallery" id="gallery">
+            <div class="main-image">
+                <img id="mainImage" src="public/images/book-2.png" alt="Обложка">
+            </div>
+            <div class="gallery-controls">
+                <button class="gallery-btn" id="prevBtn">‹</button>
+                <div class="thumbnails" id="thumbnails">
+                    <img src="public/images/book-2.png" alt="Обложка" class="active" data-index="0">
+                </div>
+                <button class="gallery-btn" id="nextBtn">›</button>
+            </div>
+        </div>
+<!-- информация о книге -->
+        <div class="product-info" id="product-info">
+            <h1 class="product-title" id="book-title">Название книги</h1>
+            <div class="product-author" id="book-author">Автор</div>
+            <div class="product-rating">
+                <span class="stars">★★★★★</span>
+                <span style="color:#555;">120 отзывов</span>
+                <a href="#" style="color:#C45D5F; font-size:13px;">Оставить отзыв</a>
+            </div>
+            <div class="product-price">
+                <span class="old" id="old-price">0 ₽</span>
+                <span class="new" id="new-price">0 ₽</span>
+                <span class="discount-badge" id="discount-badge">-0%</span>
+            </div>
+            <p class="product-description" id="book-description">Описание книги.</p>
+            <div class="product-actions">
+                <button class="btn-primary" id="addToCartBtn">Купить</button>
+                <button class="btn-secondary" id="pickupBtn">Забрать из магазина</button>
+            </div>
+
+            <div class="product-specs">
+                <h4>Характеристики</h4>
+                <div class="specs-grid" id="specs-grid">
+                    <div class="spec"><span class="label">Переплёт</span><span class="value">—</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- отзывы -->
+    <div class="reviews-section">
+        <div class="reviews-header">
+            <h3>Отзывы на это издание <span style="color:#999; font-size:16px;">120</span></h3>
+            <a href="#">Оставить отзыв</a>
+        </div>
+        <div class="review-item">
+            <div class="reviewer">Анна <span class="review-date">12 марта 2025</span></div>
+            <div class="review-text">Очень атмосферная книга, читается на одном дыхании.</div>
+        </div>
+        <div class="review-item">
+            <div class="reviewer">Дмитрий <span class="review-date">5 марта 2025</span></div>
+            <div class="review-text">Мне понравилось, как автор передал ощущение ночного города.</div>
+        </div>
+        <div class="review-item">
+            <div class="reviewer">Екатерина <span class="review-date">20 февраля 2025</span></div>
+            <div class="review-text">Первая книга этого автора, которую я прочитала. Очень рекомендую!</div>
+        </div>
+    </div>
+<!-- похожие книги -->
+    <div class="similar-section">
+        <h3>Похожие товары</h3>
+        <div class="similar-grid">
+            <div class="similar-card">
+                <img src="public/images/les.png" alt="Книга">
+                <div class="title">Норвежский лес</div>
+                <div class="author">Харуки Мураками</div>
+                <div class="price">549 ₽</div>
+            </div>
+            <div class="similar-card">
+                <img src="public/images/kugu.png" alt="Книга">
+                <div class="title">К югу от границы</div>
+                <div class="author">Харуки Мураками</div>
+                <div class="price">620 ₽</div>
+            </div>
+            <div class="similar-card">
+                <img src="public/images/kafka.png" alt="Книга">
+                <div class="title">Кафка на пляже</div>
+                <div class="author">Харуки Мураками</div>
+                <div class="price">780 ₽</div>
+            </div>
+            <div class="similar-card">
+                <img src="public/images/ohota.png" alt="Книга">
+                <div class="title">Охота на овец</div>
+                <div class="author">Харуки Мураками</div>
+                <div class="price">499 ₽</div>
+            </div>
+        </div>
+    </div>
+<!-- футер -->
+    <footer class="site-footer">
+        <div class="footer-bonus">
+            <div class="footer-bonus-content">
+                <div>
+                    <h3>Больше читаете — больше бонусов!</h3>
+                    <p>Копите бонусы по номеру телефона или с помощью штрих-кода в приложении</p>
+                    <a href="#" class="bonus-btn">Получить бонусы</a>
+                </div>
+                <div class="footer-phone" style="text-align: right;">
+                    <span>8 (495) 424-84-44</span>
+                    <div class="footer-links-small">
+                        <a href="#">Вопросы и ответы</a>
+                        <a href="#">Почувствовать в интервью</a>
+                        <a href="#">Написать обращение</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-columns">
+            <div class="footer-col">
+                <h4>Интернет-магазин</h4>
+                <ul>
+                    <li><a href="#">Акции</a></li>
+                    <li><a href="#">Распродажа</a></li>
+                    <li><a href="#">Доставка и оплата</a></li>
+                    <li><a href="#">Программа лояльности</a></li>
+                    <li><a href="#">Подарочные сертификаты</a></li>
+                    <li><a href="#">Правила продажи</a></li>
+                    <li><a href="#">Политика конфиденциальности</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Розничная сеть</h4>
+                <ul>
+                    <li><a href="#">Адреса магазинов</a></li>
+                    <li><a href="#">Книжный Дозор</a></li>
+                    <li><a href="#">О компании</a></li>
+                    <li><a href="#">Для бизнеса</a></li>
+                    <li><a href="#">Хотите у нас работать?</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Знаем, что почитать</h4>
+                <ul>
+                    <li><a href="#">Скоро в продаже</a></li>
+                    <li><a href="#">Эксклюзивные новинки</a></li>
+                    <li><a href="#">Лучшие из лучших</a></li>
+                    <li><a href="#">Книжный журнал</a></li>
+                    <li><a href="#">Книжные циклы</a></li>
+                    <li><a href="#">Что ещё почитать?</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Мобильное приложение</h4>
+                <div class="app-badge">
+                    <span>Нажмите кнопку смартфона: внутри ссылка на приложение</span>
+                </div>
+                <div style="display: flex; gap: 16px; margin: 12px 0;">
+                    <a href="https://vk.com" target="_blank" style="color: #C45D5F; text-decoration: none; font-weight: 500;">VK</a>
+                    <a href="https://telegram.org" target="_blank" style="color: #C45D5F; text-decoration: none; font-weight: 500;">Telegram</a>
+                    <a href="https://whatsapp.com" target="_blank" style="color: #C45D5F; text-decoration: none; font-weight: 500;">WhatsApp</a>
+                </div>
+                <div>
+                    <a href="#" style="color: #C45D5F; text-decoration: none; font-size: 13px;">Поделиться в соцсетях →</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026, Между строк</p>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+const booksData = {
+    'veliki': { id: 'veliki', title: 'Великий крестовый поход', author: 'Пол Уильям Андерсон', price: 349, oldPrice: 419, discount: '-17%', description: 'Эпическое повествование о крестовом походе, полное приключений и исторических деталей.', images: ['public/images/veliki.png', 'public/images/veliki2.png', 'public/images/veliki3.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '480', 'Вес': '550 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-123456-7' }, image: 'public/images/veliki.png' },
+    '451': { id: '451', title: '451\' по Фаренгейту', author: 'Рэй Брэдбери', price: 649, oldPrice: 779, discount: '-17%', description: 'Классический роман-антиутопия о мире, где книги запрещены, а пожарные сжигают их.', images: ['public/images/451.png', 'public/images/451.png', 'public/images/451.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '256', 'Вес': '300 г', 'Год издания': '2023', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-987654-3' }, image: 'public/images/451.png' },
+    'poklon': { id: 'poklon', title: 'Его прощальный поклон', author: 'Артур Конан Дойл', price: 349, oldPrice: 419, discount: '-17%', description: 'Сборник рассказов о Шерлоке Холмсе, включающий последнее дело великого сыщика.', images: ['public/images/poklon.png', 'public/images/poklon.png', 'public/images/poklon.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '320', 'Вес': '400 г', 'Год издания': '2024', 'Издательство': 'Махаон', 'ISBN': '978-5-389-12345-6' }, image: 'public/images/poklon.png' },
+    'hizina': { id: 'hizina', title: 'Хижина дяди Тома', author: 'Гарриет Бичер-Стоу', price: 1249, oldPrice: 1499, discount: '-17%', description: 'Великий роман о борьбе с рабством, тронувший сердца миллионов читателей.', images: ['public/images/hizina.png', 'public/images/hizina.png', 'public/images/hizina.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '560', 'Вес': '700 г', 'Год издания': '2022', 'Издательство': 'Азбука', 'ISBN': '978-5-389-54321-0' }, image: 'public/images/hizina.png' },
+    'tanc': { id: 'tanc', title: 'Танцовщица из Атлантиды', author: 'Пол Уильям Андерсон', price: 1249, oldPrice: 1499, discount: '-17%', description: 'Фантастический роман о путешествиях во времени и потерянных цивилизациях.', images: ['public/images/tanc.png', 'public/images/tanc.png', 'public/images/tanc.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '400', 'Вес': '520 г', 'Год издания': '2023', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-111111-1' }, image: 'public/images/tanc.png' },
+    'velikigat': { id: 'velikigat', title: 'Великий Гэтсби', author: 'Френсис Скотт Фицджеральд', price: 309, oldPrice: 377, discount: '-17%', description: 'История о любви, богатстве и американской мечте в эпоху джаза.', images: ['public/images/velikigat.png', 'public/images/velikigat.png', 'public/images/velikigat.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '224', 'Вес': '250 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-222222-2' }, image: 'public/images/velikigat.png' },
+    'book-2': { id: 'book-2', title: 'Послемрак', author: 'Харуки Мураками', price: 679, oldPrice: 828, discount: '-18%', description: 'Захватывающий роман о том, как в течение одной ночи переплетаются судьбы нескольких героев в Токио.', images: ['public/images/book-2.png', 'public/images/book-2.png', 'public/images/book-2.png', 'public/images/book-2.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '320', 'Вес': '450 г', 'Год издания': '2025', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-123456-7' }, image: 'public/images/book-2.png' },
+    '1984': { id: '1984', title: '1984', author: 'Джордж Оруэлл', price: 1199, oldPrice: 1439, discount: '-17%', description: 'Классическая антиутопия о тоталитарном обществе, где правят страх и ложь.', images: ['public/images/1984.png', 'public/images/1984.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '328', 'Вес': '420 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-111111-1' }, image: 'public/images/1984.png' },
+    'mim': { id: 'mim', title: 'Мастер и Маргарита', author: 'Михаил Булгаков', price: 1149, oldPrice: 1379, discount: '-16%', description: 'Знаменитый роман о любви, дьяволе и Москве 1930-х годов.', images: ['public/images/mim.png', 'public/images/mim.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '416', 'Вес': '500 г', 'Год издания': '2023', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-222222-2' }, image: 'public/images/mim.png' },
+    'pin': { id: 'pin', title: 'Преступление и наказание', author: 'Фёдор Достоевский', price: 339, oldPrice: 414, discount: '-18%', description: 'Великий роман о морали, вине и искуплении.', images: ['public/images/pin.png', 'public/images/pin.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '672', 'Вес': '380 г', 'Год издания': '2024', 'Издательство': 'Азбука', 'ISBN': '978-5-389-33333-3' }, image: 'public/images/pin.png' },
+    'duna': { id: 'duna', title: 'Дюна', author: 'Фрэнк Герберт', price: 1699, oldPrice: 2073, discount: '-18%', description: 'Эпическая сага о пустынной планете, специях и политических интригах.', images: ['public/images/book-6.png', 'public/images/book-6.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '896', 'Вес': '1.2 кг', 'Год издания': '2025', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-444444-4' }, image: 'public/images/book-6.png' },
+    'cveti': { id: 'cveti', title: 'Цветы для Элджернона', author: 'Дэниел Киз', price: 649, oldPrice: 792, discount: '-18%', description: 'Трогательный роман о человеке с низким IQ, который становится гением после эксперимента.', images: ['public/images/cveti.png', 'public/images/cveti.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '320', 'Вес': '300 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-555555-5' }, image: 'public/images/cveti.png' },
+    'shant': { id: 'shant', title: 'Шантарам', author: 'Грегори Дэвид Робертс', price: 1399, oldPrice: 1707, discount: '-18%', description: 'Грандиозный роман о преступнике, сбежавшем в Бомбей и нашедшем там новую жизнь.', images: ['public/images/shant.png', 'public/images/shant.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '896', 'Вес': '1.1 кг', 'Год издания': '2023', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-666666-6' }, image: 'public/images/shant.png' },
+    'igra': { id: 'igra', title: 'Игра престолов', author: 'Джордж Р.Р. Мартин', price: 949, oldPrice: 1158, discount: '-18%', description: 'Первая книга легендарной саги о борьбе за Железный трон.', images: ['public/images/igra.png', 'public/images/igra.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '688', 'Вес': '850 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-777777-7' }, image: 'public/images/igra.png' },
+    'vostok': { id: 'vostok', title: 'К востоку от Эдема', author: 'Джон Стейнбек', price: 599, oldPrice: 731, discount: '-18%', description: 'Эпический роман о семье, добре и зле, действие которого разворачивается в Калифорнии.', images: ['public/images/vostok.png', 'public/images/vostok.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '768', 'Вес': '900 г', 'Год издания': '2023', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-888888-8' }, image: 'public/images/vostok.png' },
+    'mertvie': { id: 'mertvie', title: 'Мертвые души', author: 'Николай Гоголь', price: 960, oldPrice: 1200, discount: '-20%', description: 'Гениальная поэма о похождениях Чичикова, покупающего мёртвые души.', images: ['public/images/book-4.png', 'public/images/book-4.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '352', 'Вес': '450 г', 'Год издания': '2024', 'Издательство': 'Азбука', 'ISBN': '978-5-389-99999-9' }, image: 'public/images/book-4.png' },
+    'roza': { id: 'roza', title: 'Роза Марена', author: 'Стивен Кинг', price: 850, oldPrice: 1000, discount: '-15%', description: 'Мистический роман о женщине, которая оказывается втянутой в мир жестокости и магии.', images: ['public/images/book-1.png', 'public/images/book-1.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '480', 'Вес': '350 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-101010-1' }, image: 'public/images/book-1.png' },
+    'front': { id: 'front', title: 'На западном фронте без перемен', author: 'Эрих Мария Ремарк', price: 738, oldPrice: 900, discount: '-18%', description: 'Пронзительный антивоенный роман о солдатах Первой мировой войны.', images: ['public/images/book-7.png', 'public/images/book-7.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '288', 'Вес': '340 г', 'Год издания': '2024', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-121212-2' }, image: 'public/images/book-7.png' },
+    'idiot': { id: 'idiot', title: 'Идиот', author: 'Фёдор Достоевский', price: 990, oldPrice: 1100, discount: '-10%', description: 'Роман о князе Мышкине, чья доброта и искренность сталкиваются с жестокостью мира.', images: ['public/images/idiot.png', 'public/images/idiot.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '576', 'Вес': '650 г', 'Год издания': '2023', 'Издательство': 'Азбука', 'ISBN': '978-5-389-131313-3' }, image: 'public/images/idiot.png' },
+    'tri': { id: 'tri', title: 'Три товарища', author: 'Эрих Мария Ремарк', price: 849, oldPrice: 1036, discount: '-18%', description: 'Роман о дружбе и любви в Германии 1920-х годов.', images: ['public/images/tri.png', 'public/images/tri.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '416', 'Вес': '520 г', 'Год издания': '2024', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-141414-4' }, image: 'public/images/tri.png' },
+    'starik': { id: 'starik', title: 'Старик и море', author: 'Эрнест Хемингуэй', price: 279, oldPrice: 340, discount: '-18%', description: 'Повесть о старом рыбаке и его борьбе с огромной рыбой.', images: ['public/images/starik.png', 'public/images/starik.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '128', 'Вес': '150 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-151515-5' }, image: 'public/images/starik.png' },
+    'portret': { id: 'portret', title: 'Портрет Дориана Грея', author: 'Оскар Уайльд', price: 649, oldPrice: 792, discount: '-18%', description: 'Философский роман о красоте, нравственности и цене вечной молодости.', images: ['public/images/portret.png', 'public/images/portret.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '256', 'Вес': '320 г', 'Год издания': '2024', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-161616-6' }, image: 'public/images/portret.png' },
+    'bratya': { id: 'bratya', title: 'Братья Карамазовы', author: 'Фёдор Достоевский', price: 1249, oldPrice: 1524, discount: '-18%', description: 'Вершина творчества Достоевского — роман о вере, сомнении и искуплении.', images: ['public/images/bratya.png', 'public/images/bratya.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '800', 'Вес': '980 г', 'Год издания': '2023', 'Издательство': 'Азбука', 'ISBN': '978-5-389-171717-7' }, image: 'public/images/bratya.png' },
+    'vorzi': { id: 'vorzi', title: 'Над пропастью во ржи', author: 'Джером Сэлинджер', price: 499, oldPrice: 609, discount: '-18%', description: 'Культовый роман о подростке Холдене Колфилде и его бунте против взрослого мира.', images: ['public/images/vorzi.png', 'public/images/vorzi.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '224', 'Вес': '250 г', 'Год издания': '2024', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-181818-8' }, image: 'public/images/vorzi.png' },
+    'klub': { id: 'klub', title: 'Клуб самоубийц', author: 'Роберт Льюис Стивенсон', price: 319, oldPrice: 383, discount: '-17%', description: 'Классический сборник историй о таинственном клубе, где играют со смертью.', images: ['public/images/klub.png', 'public/images/klub.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '192', 'Вес': '200 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-191919-9' }, image: 'public/images/klub.png' },
+    'vor': { id: 'vor', title: 'Книжный вор', author: 'Маркус Зусак', price: 429, oldPrice: 523, discount: '-18%', description: 'Пронзительная история о девочке, которая воровала книги во время Второй мировой войны.', images: ['public/images/vor.png', 'public/images/vor.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '384', 'Вес': '480 г', 'Год издания': '2024', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-202020-0' }, image: 'public/images/vor.png' },
+    'veter': { id: 'veter', title: 'Имя ветра', author: 'Патрик Ротфусс', price: 1259, oldPrice: 1559, discount: '-19%', description: 'Первая книга трилогии «Хроники Убийцы Короля» — магическая эпопея.', images: ['public/images/veter.png', 'public/images/veter.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '672', 'Вес': '820 г', 'Год издания': '2025', 'Издательство': 'АСТ', 'ISBN': '978-5-17-212121-1' }, image: 'public/images/veter.png' },
+    'piknik': { id: 'piknik', title: 'Пикник на обочине', author: 'Аркадий и Борис Стругацкие', price: 389, oldPrice: 475, discount: '-18%', description: 'Классический роман о зоне аномалий, которая меняет сознание людей.', images: ['public/images/piknik.png', 'public/images/piknik.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '256', 'Вес': '280 г', 'Год издания': '2024', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-222222-2' }, image: 'public/images/piknik.png' },
+    'taina': { id: 'taina', title: 'Тайная история', author: 'Донна Тартт', price: 1499, oldPrice: 1829, discount: '-18%', description: 'Интеллектуальный триллер о группе студентов, увлечённых древнегреческой культурой, и убийстве.', images: ['public/images/taina.png', 'public/images/taina.png'], specs: { 'Переплёт': 'Твёрдый', 'Кол-во страниц': '608', 'Вес': '750 г', 'Год издания': '2023', 'Издательство': 'Эксмо', 'ISBN': '978-5-04-232323-3' }, image: 'public/images/taina.png' },
+    'divni': { id: 'divni', title: 'О дивный новый мир', author: 'Олдос Хаксли', price: 429, oldPrice: 523, discount: '-18%', description: 'Антиутопия о мире, где люди генетически модифицированы и лишены свободы воли.', images: ['public/images/divni.png', 'public/images/divni.png'], specs: { 'Переплёт': 'Мягкий', 'Кол-во страниц': '288', 'Вес': '310 г', 'Год издания': '2024', 'Издательство': 'АСТ', 'ISBN': '978-5-17-242424-4' }, image: 'public/images/divni.png' }
+};
+
+const urlParams = new URLSearchParams(window.location.search);
+const bookId = urlParams.get('id');
+
+if (!bookId || !booksData[bookId]) {
+    document.body.innerHTML = `
+        <div style="max-width: 600px; margin: 100px auto; text-align: center; font-family: 'Montserrat', sans-serif;">
+            <h1 style="color: #C45D5F;">Книга не найдена</h1>
+            <p style="color: #666; margin: 20px 0;">Попробуйте вернуться на главную и выбрать другую книгу.</p>
+            <a href="index.html" style="background: #C45D5F; color: white; padding: 12px 30px; border-radius: 40px; text-decoration: none; font-weight: 600;">На главную</a>
+        </div>
+    `;
+} else {
+    const book = booksData[bookId];
+
+    document.title = book.title + ' – Между строк';
+    document.querySelector('#breadcrumb-title').textContent = book.title;
+    document.querySelector('#book-title').textContent = book.title;
+    document.querySelector('#book-author').textContent = book.author;
+    document.querySelector('#old-price').textContent = book.oldPrice + ' ₽';
+    document.querySelector('#new-price').textContent = book.price + ' ₽';
+    document.querySelector('#discount-badge').textContent = book.discount;
+    document.querySelector('#book-description').textContent = book.description;
+
+    const specsGrid = document.querySelector('#specs-grid');
+    specsGrid.innerHTML = '';
+    for (const [key, value] of Object.entries(book.specs)) {
+        specsGrid.innerHTML += `<div class="spec"><span class="label">${key}</span><span class="value">${value}</span></div>`;
+    }
+
+    const mainImage = document.querySelector('#mainImage');
+    const thumbnailsContainer = document.querySelector('#thumbnails');
+    thumbnailsContainer.innerHTML = '';
+    const images = book.images;
+    let currentIndex = 0;
+
+    images.forEach((src, index) => {
+        const thumb = document.createElement('img');
+        thumb.src = src;
+        thumb.alt = book.title;
+        thumb.dataset.index = index;
+        if (index === 0) thumb.classList.add('active');
+        thumb.addEventListener('click', () => updateGallery(index));
+        thumbnailsContainer.appendChild(thumb);
+    });
+
+    function updateGallery(index) {
+        mainImage.src = images[index];
+        document.querySelectorAll('#thumbnails img').forEach((thumb, i) => {
+            thumb.classList.toggle('active', i === index);
+        });
+        currentIndex = index;
+    }
+
+    document.querySelector('#prevBtn').addEventListener('click', () => {
+        const newIndex = (currentIndex - 1 + images.length) % images.length;
+        updateGallery(newIndex);
+    });
+    document.querySelector('#nextBtn').addEventListener('click', () => {
+        const newIndex = (currentIndex + 1) % images.length;
+        updateGallery(newIndex);
+    });
+
+    mainImage.src = images[0];
+    updateGallery(0);
+
+    // кнопка купить
+    const addBtn = document.getElementById('addToCartBtn');
+    if (addBtn) {
+        addBtn.addEventListener('click', function() {
+            if (typeof addToCart === 'function') {
+                addToCart(bookId);
+            } else {
+                alert('Функция корзины не загружена. Проверьте подключение cart-functions.js');
+            }
+        });
+    }
+    // кнопка забрать из магазина + адаптивка
+    const pickupBtn = document.getElementById('pickupBtn');
+    const modal = document.getElementById('pickupModal');
+    const modalClose = document.getElementById('modalClose');
+
+    if (pickupBtn && modal) {
+        pickupBtn.addEventListener('click', function() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
+    if (modalClose && modal) {
+        modalClose.addEventListener('click', function() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+}
+// инициализация счетчика
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof updateCartCount === 'function') {
+        updateCartCount();
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="cart-functions.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23C45D5F'/><text x='50' y='.9em' font-size='80' text-anchor='middle' fill='white' font-weight='bold'>М</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог – Между строк</title>
+    <link href="public/css/main.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #faf5f4;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            box-shadow: 0 2px 8px rgba(196,93,95,0.12);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #C45D5F;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+        .header nav { display: flex; gap: 24px; }
+        .header nav a {
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .header nav a:hover { color: #C45D5F; }
+        .header nav a.active { color: #C45D5F; font-weight: 700; }
+        .cart-link {
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+        .cart-link:hover { color: #C45D5F; }
+        .cart-count {
+            background: #C45D5F;
+            color: white;
+            border-radius: 50%;
+            padding: 0 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 4px;
+            position: relative;
+            top: -6px;
+        }
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f0ecea;
+            border-radius: 40px;
+            padding: 4px 4px 4px 16px;
+            width: 280px;
+            transition: 0.2s;
+        }
+        .search-wrapper:focus-within {
+            background: #e8e0dc;
+            box-shadow: 0 0 0 2px #C45D5F;
+        }
+        .search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            color: #2c1e1e;
+            width: 100%;
+            padding: 8px 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .search-input::placeholder { color: #999; }
+        .search-btn {
+            background: #C45D5F;
+            border: none;
+            border-radius: 40px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .search-btn:hover { background: #a84a4c; }
+
+        .catalog-header {
+            margin: 20px 0 16px;
+        }
+        .catalog-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #2c1e1e;
+        }
+        .catalog-header p {
+            color: #666;
+            font-size: 15px;
+            margin-top: 4px;
+        }
+
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+        .filter-section .label {
+            font-weight: 600;
+            color: #555;
+            margin-right: 8px;
+        }
+        .filter-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 6px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+            color: #555;
+        }
+        .filter-btn:hover {
+            border-color: #C45D5F;
+            color: #C45D5F;
+        }
+        .filter-btn.active {
+            background: #C45D5F;
+            border-color: #C45D5F;
+            color: white;
+        }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .book-card {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: 0.2s;
+            height: 100%;
+        }
+        .book-card:hover { box-shadow: 0 8px 24px rgba(196,93,95,0.15); }
+        .book-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+        .book-card .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .book-card .card-content .buy-btn { margin-top: auto; }
+        .discount {
+            background: #C45D5F;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            align-self: flex-start;
+        }
+        .price-block {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .old-price {
+            text-decoration: line-through;
+            color: #aaa;
+            font-size: 13px;
+        }
+        .new-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c1e1e;
+        }
+        .book-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 4px;
+            color: #2c1e1e;
+        }
+        .book-author {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .buy-btn {
+            width: 100%;
+            background: #C45D5F;
+            color: white;
+            border: none;
+            padding: 8px 0;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 4px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .buy-btn:hover { background: #a84a4c; }
+
+        .site-footer {
+            background: white;
+            border-radius: 24px;
+            padding: 32px 32px 16px;
+            margin-top: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .footer-bonus {
+            background: #faf0ee;
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            border: 1px solid #f0e0dd;
+        }
+        .footer-bonus-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-bonus-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c1e1e;
+        }
+        .footer-bonus-content p {
+            color: #555;
+            font-size: 14px;
+            margin: 4px 0 12px;
+        }
+        .bonus-btn {
+            background: #C45D5F;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            transition: 0.2s;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .bonus-btn:hover { background: #a84a4c; }
+        .footer-phone { text-align: right; }
+        .footer-phone span {
+            font-size: 24px;
+            font-weight: 700;
+            color: #C45D5F;
+            font-family: 'Playfair Display', serif;
+        }
+        .footer-links-small {
+            display: flex;
+            gap: 16px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .footer-links-small a {
+            color: #C45D5F;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .footer-links-small a:hover { text-decoration: underline; }
+
+        .footer-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        .footer-col h4 {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c1e1e;
+            margin-bottom: 12px;
+        }
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-col ul li { margin-bottom: 8px; }
+        .footer-col ul li a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .footer-col ul li a:hover { color: #C45D5F; }
+        .app-badge {
+            background: #f5f0ee;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            margin: 12px 0;
+        }
+        .social-icons a {
+            color: #C45D5F;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .social-icons a:hover { text-decoration: underline; }
+        .share-link {
+            color: #C45D5F;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .share-link:hover { text-decoration: underline; }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                border-radius: 20px;
+                padding: 16px;
+            }
+            .search-wrapper { width: 100%; max-width: 100%; }
+            .header nav {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .cart-link { text-align: center; }
+            .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+            .site-footer { padding: 20px; }
+            .footer-bonus { padding: 20px; }
+            .footer-bonus-content { flex-direction: column; text-align: center; }
+            .footer-phone { text-align: center; }
+            .footer-links-small { justify-content: center; }
+            .footer-columns {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+            .filter-section { justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            .footer-columns { grid-template-columns: 1fr; }
+            .filter-btn { font-size: 12px; padding: 4px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+<!-- шапка -->
+    <div class="header">
+        <a href="index.html" class="logo">МЕЖДУ СТРОК</a>
+        <div class="search-wrapper">
+            <input type="text" class="search-input" id="catalogSearch" placeholder="Поиск книг...">
+            <button class="search-btn" id="searchBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </button>
+        </div>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="catalog.html" class="active">Каталог</a>
+            <a href="#">Новинки</a>
+            <a href="contact.html">Контакты</a>
+        </nav>
+        <a href="cart.html" class="cart-link">Корзина <span class="cart-count" id="cartCount">0</span></a>
+    </div>
+
+<!-- заголовок каталога -->
+    <div class="catalog-header">
+        <h1>Каталог книг</h1>
+        <p>Все книги в одном месте. Выберите жанр или найдите книгу по названию и автору.</p>
+    </div>
+
+<!-- фильтры -->
+    <div class="filter-section">
+        <span class="label">Жанр:</span>
+        <button class="filter-btn active" data-genre="all">Все</button>
+        <button class="filter-btn" data-genre="Классика">Классика</button>
+        <button class="filter-btn" data-genre="Фантастика">Фантастика</button>
+        <button class="filter-btn" data-genre="Фэнтези">Фэнтези</button>
+        <button class="filter-btn" data-genre="Детектив">Детектив</button>
+        <button class="filter-btn" data-genre="Современная проза">Современная проза</button>
+        <button class="filter-btn" data-genre="Приключения">Приключения</button>
+        <button class="filter-btn" data-genre="Триллер">Триллер</button>
+        <button class="filter-btn" data-genre="Мистика">Мистика</button>
+    </div>
+
+<!-- сетка книг -->
+    <div class="catalog-grid" id="catalogGrid"></div>
+<!-- футер -->
+    <footer class="site-footer">
+        <div class="footer-bonus">
+            <div class="footer-bonus-content">
+                <div>
+                    <h3>Больше читаете — больше бонусов!</h3>
+                    <p>Копите бонусы по номеру телефона или с помощью штрих-кода в приложении</p>
+                    <a href="#" class="bonus-btn">Получить бонусы</a>
+                </div>
+                <div class="footer-phone" style="text-align: right;">
+                    <span>8 (495) 424-84-44</span>
+                    <div class="footer-links-small">
+                        <a href="#">Вопросы и ответы</a>
+                        <a href="#">Почувствовать в интервью</a>
+                        <a href="#">Написать обращение</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-columns">
+            <div class="footer-col">
+                <h4>Интернет-магазин</h4>
+                <ul>
+                    <li><a href="#">Акции</a></li>
+                    <li><a href="#">Распродажа</a></li>
+                    <li><a href="#">Доставка и оплата</a></li>
+                    <li><a href="#">Программа лояльности</a></li>
+                    <li><a href="#">Подарочные сертификаты</a></li>
+                    <li><a href="#">Правила продажи</a></li>
+                    <li><a href="#">Политика конфиденциальности</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Розничная сеть</h4>
+                <ul>
+                    <li><a href="#">Адреса магазинов</a></li>
+                    <li><a href="#">Книжный Дозор</a></li>
+                    <li><a href="#">О компании</a></li>
+                    <li><a href="#">Для бизнеса</a></li>
+                    <li><a href="#">Хотите у нас работать?</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Знаем, что почитать</h4>
+                <ul>
+                    <li><a href="#">Скоро в продаже</a></li>
+                    <li><a href="#">Эксклюзивные новинки</a></li>
+                    <li><a href="#">Лучшие из лучших</a></li>
+                    <li><a href="#">Книжный журнал</a></li>
+                    <li><a href="#">Книжные циклы</a></li>
+                    <li><a href="#">Что ещё почитать?</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Мобильное приложение</h4>
+                <div class="app-badge">
+                    <span>Нажмите кнопку смартфона: внутри ссылка на приложение</span>
+                </div>
+                <div style="display: flex; gap: 16px; margin: 12px 0;">
+                    <a href="https://vk.com" target="_blank" style="color: #C45D5F; text-decoration: none; font-weight: 500;">VK</a>
+                    <a href="https://telegram.org" target="_blank" style="color: #C45D5F; text-decoration: none; font-weight: 500;">Telegram</a>
+                    <a href="https://whatsapp.com" target="_blank" style="color: #C45D5F; text-decoration: none; font-weight: 500;">WhatsApp</a>
+                </div>
+                <div>
+                    <a href="#" style="color: #C45D5F; text-decoration: none; font-size: 13px;">Поделиться в соцсетях →</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026, Между строк</p>
+        </div>
+    </footer>
+
+</div>
+
+<script>
+const booksData = {
+    'veliki': {
+        id: 'veliki',
+        title: 'Великий крестовый поход',
+        author: 'Пол Уильям Андерсон',
+        price: 349,
+        oldPrice: 419,
+        discount: '-17%',
+        description: 'Эпическое повествование о крестовом походе.',
+        images: ['public/images/veliki.png'],
+        genre: 'Приключения',
+        image: 'public/images/veliki.png'
+    },
+    '451': {
+        id: '451',
+        title: '451\' по Фаренгейту',
+        author: 'Рэй Брэдбери',
+        price: 649,
+        oldPrice: 779,
+        discount: '-17%',
+        description: 'Классический роман-антиутопия.',
+        images: ['public/images/451.png'],
+        genre: 'Фантастика',
+        image: 'public/images/451.png'
+    },
+    'poklon': {
+        id: 'poklon',
+        title: 'Его прощальный поклон',
+        author: 'Артур Конан Дойл',
+        price: 349,
+        oldPrice: 419,
+        discount: '-17%',
+        description: 'Сборник рассказов о Шерлоке Холмсе.',
+        images: ['public/images/poklon.png'],
+        genre: 'Детектив',
+        image: 'public/images/poklon.png'
+    },
+    'hizina': {
+        id: 'hizina',
+        title: 'Хижина дяди Тома',
+        author: 'Гарриет Бичер-Стоу',
+        price: 1249,
+        oldPrice: 1499,
+        discount: '-17%',
+        description: 'Великий роман о борьбе с рабством.',
+        images: ['public/images/hizina.png'],
+        genre: 'Классика',
+        image: 'public/images/hizina.png'
+    },
+    'tanc': {
+        id: 'tanc',
+        title: 'Танцовщица из Атлантиды',
+        author: 'Пол Уильям Андерсон',
+        price: 1249,
+        oldPrice: 1499,
+        discount: '-17%',
+        description: 'Фантастический роман о путешествиях во времени.',
+        images: ['public/images/tanc.png'],
+        genre: 'Фантастика',
+        image: 'public/images/tanc.png'
+    },
+    'velikigat': {
+        id: 'velikigat',
+        title: 'Великий Гэтсби',
+        author: 'Френсис Скотт Фицджеральд',
+        price: 309,
+        oldPrice: 377,
+        discount: '-17%',
+        description: 'История о любви и богатстве в эпоху джаза.',
+        images: ['public/images/velikigat.png'],
+        genre: 'Классика',
+        image: 'public/images/velikigat.png'
+    },
+    'book-2': {
+        id: 'book-2',
+        title: 'Послемрак',
+        author: 'Харуки Мураками',
+        price: 679,
+        oldPrice: 828,
+        discount: '-18%',
+        description: 'Роман о ночном Токио и переплетении судеб.',
+        images: ['public/images/book-2.png'],
+        genre: 'Современная проза',
+        image: 'public/images/book-2.png'
+    },
+    '1984': {
+        id: '1984',
+        title: '1984',
+        author: 'Джордж Оруэлл',
+        price: 1199,
+        oldPrice: 1439,
+        discount: '-17%',
+        description: 'Классическая антиутопия.',
+        images: ['public/images/1984.png'],
+        genre: 'Фантастика',
+        image: 'public/images/1984.png'
+    },
+    'mim': {
+        id: 'mim',
+        title: 'Мастер и Маргарита',
+        author: 'Михаил Булгаков',
+        price: 1149,
+        oldPrice: 1379,
+        discount: '-16%',
+        description: 'Знаменитый роман о любви и дьяволе.',
+        images: ['public/images/mim.png'],
+        genre: 'Классика',
+        image: 'public/images/mim.png'
+    },
+    'pin': {
+        id: 'pin',
+        title: 'Преступление и наказание',
+        author: 'Фёдор Достоевский',
+        price: 339,
+        oldPrice: 414,
+        discount: '-18%',
+        description: 'Великий роман о морали и искуплении.',
+        images: ['public/images/pin.png'],
+        genre: 'Классика',
+        image: 'public/images/pin.png'
+    },
+    'duna': {
+        id: 'duna',
+        title: 'Дюна',
+        author: 'Фрэнк Герберт',
+        price: 1699,
+        oldPrice: 2073,
+        discount: '-18%',
+        description: 'Эпическая сага о пустынной планете.',
+        images: ['public/images/book-6.png'],
+        genre: 'Фантастика',
+        image: 'public/images/book-6.png'
+    },
+    'cveti': {
+        id: 'cveti',
+        title: 'Цветы для Элджернона',
+        author: 'Дэниел Киз',
+        price: 649,
+        oldPrice: 792,
+        discount: '-18%',
+        description: 'Трогательный роман о человеке, ставшем гением.',
+        images: ['public/images/cveti.png'],
+        genre: 'Фантастика',
+        image: 'public/images/cveti.png'
+    },
+    'shant': {
+        id: 'shant',
+        title: 'Шантарам',
+        author: 'Грегори Дэвид Робертс',
+        price: 1399,
+        oldPrice: 1707,
+        discount: '-18%',
+        description: 'Грандиозный роман о Бомбее и новой жизни.',
+        images: ['public/images/shant.png'],
+        genre: 'Приключения',
+        image: 'public/images/shant.png'
+    },
+    'igra': {
+        id: 'igra',
+        title: 'Игра престолов',
+        author: 'Джордж Р.Р. Мартин',
+        price: 949,
+        oldPrice: 1158,
+        discount: '-18%',
+        description: 'Первая книга легендарной саги.',
+        images: ['public/images/igra.png'],
+        genre: 'Фэнтези',
+        image: 'public/images/igra.png'
+    },
+    'vostok': {
+        id: 'vostok',
+        title: 'К востоку от Эдема',
+        author: 'Джон Стейнбек',
+        price: 599,
+        oldPrice: 731,
+        discount: '-18%',
+        description: 'Эпический роман о семье и добре.',
+        images: ['public/images/vostok.png'],
+        genre: 'Классика',
+        image: 'public/images/vostok.png'
+    },
+    'mertvie': {
+        id: 'mertvie',
+        title: 'Мертвые души',
+        author: 'Николай Гоголь',
+        price: 960,
+        oldPrice: 1200,
+        discount: '-20%',
+        description: 'Гениальная поэма о Чичикове.',
+        images: ['public/images/book-4.png'],
+        genre: 'Классика',
+        image: 'public/images/book-4.png'
+    },
+    'roza': {
+        id: 'roza',
+        title: 'Роза Марена',
+        author: 'Стивен Кинг',
+        price: 850,
+        oldPrice: 1000,
+        discount: '-15%',
+        description: 'Мистический роман о жестокости и магии.',
+        images: ['public/images/book-1.png'],
+        genre: 'Мистика',
+        image: 'public/images/book-1.png'
+    },
+    'front': {
+        id: 'front',
+        title: 'На западном фронте без перемен',
+        author: 'Эрих Мария Ремарк',
+        price: 738,
+        oldPrice: 900,
+        discount: '-18%',
+        description: 'Пронзительный антивоенный роман.',
+        images: ['public/images/book-7.png'],
+        genre: 'Классика',
+        image: 'public/images/book-7.png'
+    },
+    'idiot': {
+        id: 'idiot',
+        title: 'Идиот',
+        author: 'Фёдор Достоевский',
+        price: 990,
+        oldPrice: 1100,
+        discount: '-10%',
+        description: 'Роман о князе Мышкине и жестокости мира.',
+        images: ['public/images/idiot.png'],
+        genre: 'Классика',
+        image: 'public/images/idiot.png'
+    },
+    'tri': {
+        id: 'tri',
+        title: 'Три товарища',
+        author: 'Эрих Мария Ремарк',
+        price: 849,
+        oldPrice: 1036,
+        discount: '-18%',
+        description: 'Роман о дружбе и любви в Германии 1920-х.',
+        images: ['public/images/tri.png'],
+        genre: 'Классика',
+        image: 'public/images/tri.png'
+    },
+    'starik': {
+        id: 'starik',
+        title: 'Старик и море',
+        author: 'Эрнест Хемингуэй',
+        price: 279,
+        oldPrice: 340,
+        discount: '-18%',
+        description: 'Повесть о старом рыбаке.',
+        images: ['public/images/starik.png'],
+        genre: 'Классика',
+        image: 'public/images/starik.png'
+    },
+    'portret': {
+        id: 'portret',
+        title: 'Портрет Дориана Грея',
+        author: 'Оскар Уайльд',
+        price: 649,
+        oldPrice: 792,
+        discount: '-18%',
+        description: 'Роман о красоте и нравственности.',
+        images: ['public/images/portret.png'],
+        genre: 'Классика',
+        image: 'public/images/portret.png'
+    },
+    'bratya': {
+        id: 'bratya',
+        title: 'Братья Карамазовы',
+        author: 'Фёдор Достоевский',
+        price: 1249,
+        oldPrice: 1524,
+        discount: '-18%',
+        description: 'Вершина творчества Достоевского.',
+        images: ['public/images/bratya.png'],
+        genre: 'Классика',
+        image: 'public/images/bratya.png'
+    },
+    'vorzi': {
+        id: 'vorzi',
+        title: 'Над пропастью во ржи',
+        author: 'Джером Сэлинджер',
+        price: 499,
+        oldPrice: 609,
+        discount: '-18%',
+        description: 'Культовый роман о подростке Холдене.',
+        images: ['public/images/vorzi.png'],
+        genre: 'Классика',
+        image: 'public/images/vorzi.png'
+    },
+    'klub': {
+        id: 'klub',
+        title: 'Клуб самоубийц',
+        author: 'Роберт Льюис Стивенсон',
+        price: 319,
+        oldPrice: 383,
+        discount: '-17%',
+        description: 'Сборник историй о таинственном клубе.',
+        images: ['public/images/klub.png'],
+        genre: 'Приключения',
+        image: 'public/images/klub.png'
+    },
+    'vor': {
+        id: 'vor',
+        title: 'Книжный вор',
+        author: 'Маркус Зусак',
+        price: 429,
+        oldPrice: 523,
+        discount: '-18%',
+        description: 'История о девочке, воровавшей книги.',
+        images: ['public/images/vor.png'],
+        genre: 'Классика',
+        image: 'public/images/vor.png'
+    },
+    'veter': {
+        id: 'veter',
+        title: 'Имя ветра',
+        author: 'Патрик Ротфусс',
+        price: 1259,
+        oldPrice: 1559,
+        discount: '-19%',
+        description: 'Магическая эпопея «Хроники Убийцы Короля».',
+        images: ['public/images/veter.png'],
+        genre: 'Фэнтези',
+        image: 'public/images/veter.png'
+    },
+    'piknik': {
+        id: 'piknik',
+        title: 'Пикник на обочине',
+        author: 'Аркадий и Борис Стругацкие',
+        price: 389,
+        oldPrice: 475,
+        discount: '-18%',
+        description: 'Роман о зоне аномалий.',
+        images: ['public/images/piknik.png'],
+        genre: 'Фантастика',
+        image: 'public/images/piknik.png'
+    },
+    'taina': {
+        id: 'taina',
+        title: 'Тайная история',
+        author: 'Донна Тартт',
+        price: 1499,
+        oldPrice: 1829,
+        discount: '-18%',
+        description: 'Триллер о студентах и убийстве.',
+        images: ['public/images/taina.png'],
+        genre: 'Триллер',
+        image: 'public/images/taina.png'
+    },
+    'divni': {
+        id: 'divni',
+        title: 'О дивный новый мир',
+        author: 'Олдос Хаксли',
+        price: 429,
+        oldPrice: 523,
+        discount: '-18%',
+        description: 'Антиутопия о мире без свободы.',
+        images: ['public/images/divni.png'],
+        genre: 'Фантастика',
+        image: 'public/images/divni.png'
+    }
+};
+
+// ===== ОТОБРАЖЕНИЕ КНИГ В КАТАЛОГЕ =====
+const grid = document.getElementById('catalogGrid');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const searchInput = document.getElementById('catalogSearch');
+let currentGenre = 'all';
+let currentSearch = '';
+
+function renderCatalog() {
+    const booksArray = Object.values(booksData);
+    let filtered = booksArray;
+
+    if (currentGenre !== 'all') {
+        filtered = filtered.filter(book => book.genre === currentGenre);
+    }
+
+    if (currentSearch.trim() !== '') {
+        const q = currentSearch.toLowerCase().trim();
+        filtered = filtered.filter(book =>
+            book.title.toLowerCase().includes(q) ||
+            book.author.toLowerCase().includes(q)
+        );
+    }
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px 0;">По вашему запросу ничего не найдено.</p>`;
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(book => {
+        const discountHtml = book.discount ? `<span class="discount">${book.discount}</span>` : '';
+        const oldPriceHtml = book.oldPrice ? `<span class="old-price">${book.oldPrice} ₽</span>` : '';
+        html += `
+            <a href="product.html?id=${book.id}" style="text-decoration: none; color: inherit;">
+                <div class="book-card">
+                    <img src="${book.images[0]}" alt="${book.title}">
+                    <div class="card-content">
+                        ${discountHtml}
+                        <div class="price-block">
+                            ${oldPriceHtml}
+                            <span class="new-price">${book.price} ₽</span>
+                        </div>
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">${book.author}</div>
+                        <button class="buy-btn" onclick="addToCart('${book.id}')">Купить</button>
+                    </div>
+                </div>
+            </a>
+        `;
+    });
+    grid.innerHTML = html;
+}
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentGenre = this.dataset.genre;
+        renderCatalog();
+    });
+});
+
+searchInput.addEventListener('input', function() {
+    currentSearch = this.value;
+    renderCatalog();
+});
+
+renderCatalog();
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
+    });
+</script>
+
+</body>
+</html>
